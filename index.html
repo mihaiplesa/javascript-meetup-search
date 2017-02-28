@@ -1,0 +1,72 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script type="text/javascript">
+        key = "YOUR_MEETUP_API_KEY";
+
+        $(function () {
+            var update = function () {
+                text = $('form').serialize()
+
+                url = "https://api.meetup.com/2/open_events?key=" + key
+                    + "&sign=true&photo-host=public&limited_events=true&text_format=plain&country=gb&city=london&" + text
+                    + "&page=100";
+                console.log(url);
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: "jsonp",
+                    success: function (response) {
+                        console.log(response);
+
+                        console.log(response.results.length);
+
+                        var r = new Array(), j = -1;
+                        r[++j] = '<table><thead><tr><th>Name</th><th>Yes</th><th>Wait</th><th>Distance</th><th>Time</th></tr></thead><tbody>';
+                        for (var key = 0, size = response.results.length; key < size; key++) {
+                            r[++j] = '<tr><td>';
+                            r[++j] = response.results[key].name;
+                            r[++j] = '</td><td>';
+                            r[++j] = response.results[key].yes_rsvp_count;
+                            r[++j] = '</td><td>';
+                            r[++j] = response.results[key].waitlist_count;
+                            r[++j] = '</td><td>';
+                            r[++j] = response.results[key].distance;
+                            r[++j] = '</td><td><a href="';
+                            r[++j] = response.results[key].event_url;
+                            r[++j] = '" data-toggle="tooltip" title="';
+                            r[++j] = $("<div>").text(response.results[key].group.name + '\n\n' + response.results[key].description).html();
+                            r[++j] = '">';
+                            d = new Date(response.results[key].time);
+                            r[++j] = d.toLocaleTimeString();
+                            r[++j] = '</a></td></tr>';
+                        }
+                        r[++j] = '</tbody></table>';
+                        $('#dataTable').html(r.join(''));
+                    },
+                    error: function (xhr, status) {
+                        alert(status);
+                    }
+                });
+            };
+            update();
+            $('form').change(update);
+            $('form').submit(function () {
+                return false;
+            });
+        })
+    </script>
+</head>
+
+<body class="body">
+    <form target='_self'>
+        <input name='text' size='100' value='devops'>
+        <input name='time' value=',2d'>
+    </form>
+    
+    <div id="dataTable"></div>
+</body>
+
+</html>
